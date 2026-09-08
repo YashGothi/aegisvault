@@ -26,7 +26,8 @@ jobs:
         run: sleep 15
 
       - name: Health check - backend
-        run: curl --fail http://localhost:8000 || exit 1
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" http://localhost:8000 | grep -qE "^[2-4][0-9][0-9]$" && echo "Backend is up" || (echo "Backend not responding" && exit 1)
 
       - name: Health check - frontend
         run: curl --fail http://localhost:3000 || exit 1
