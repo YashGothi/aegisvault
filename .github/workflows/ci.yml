@@ -23,10 +23,13 @@ jobs:
         run: docker compose up -d
 
       - name: Wait for containers to be ready
-        run: sleep 10
+        run: sleep 15
 
-      - name: Health check
-        run: curl --fail http://localhost || exit 1
+      - name: Health check - backend
+        run: curl --fail http://localhost:8000 || exit 1
+
+      - name: Health check - frontend
+        run: curl --fail http://localhost:3000 || exit 1
 
       - name: Show logs on failure
         if: failure()
