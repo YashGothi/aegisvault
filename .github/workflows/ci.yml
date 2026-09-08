@@ -1,0 +1,33 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t aegisvault-backend ./backend
+
+      - name: Build frontend image
+        run: docker build -t aegisvault-frontend ./frontend
+
+      - name: Start full stack with docker compose
+        run: docker compose up -d
+
+      - name: Wait for containers to be ready
+        run: sleep 10
+
+      - name: Health check
+        run: curl --fail http://localhost || exit 1
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
