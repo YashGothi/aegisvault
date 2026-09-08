@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: passwd_manager
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d passwd_manager"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: backend
+    # command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    # environment:
+    #   DB_ENGINE: django.db.backends.postgresql
+    #   DB_NAME: passwd_manager
+    #   DB_USER: myuser
+    #   DB_PASSWORD: mypassword
+    #   DB_HOST: db
+    #   DB_PORT: "5432"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    command: npm run dev -- --host --port 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
